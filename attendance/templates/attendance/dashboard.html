@@ -1,0 +1,82 @@
+{% extends "attendance/base.html" %}
+{% block title %}ダッシュボード{% endblock %}
+{% block header %}勤怠ダッシュボード{% endblock %}
+
+{% block content %}
+  <div class="card mb-4">
+    <div class="card-body text-center">
+      <p id="current-date" class="text-muted small mb-1"></p>
+      <h1 id="current-time" class="display-3 font-weight-bold text-primary"></h1>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4>本日の出退勤</h4>
+      <div class="d-flex justify-content-left mb-3">
+        <p class="mb-0 mr-4">出勤: {{ attendance.clock_in|default:"未打刻" }}</p>
+        <p class="mb-0">退勤: {{ attendance.clock_out|default:"未打刻" }}</p>
+      </div>
+
+      <div class="d-flex">
+        <form method="post" action="{% url 'clock_in' %}" class="mr-2">
+          {% csrf_token %}
+          <button class="btn btn-primary">出勤</button>
+        </form>
+        <form method="post" action="{% url 'clock_out' %}">
+          {% csrf_token %}
+          <button class="btn btn-secondary">退勤</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4>休憩管理</h4>
+      <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5rem;">
+        {% for b in breaks %}
+          <div class="d-flex justify-content-left mb-2">
+            <span class="mr-4">開始: {{ b.start }}</span>
+            <span>終了: {{ b.end|default:"休憩中" }}</span>
+          </div>
+        {% empty %}
+          <p>まだ休憩していません</p>
+        {% endfor %}
+      </div>
+      
+      <div class="pt-4 d-flex">
+        <form method="post" action="{% url 'break_start' %}" class="mr-2">
+          {% csrf_token %}
+          <button class="btn btn-primary">休憩開始</button>
+        </form>
+      
+        <form method="post" action="{% url 'break_end' %}">
+          {% csrf_token %}
+          <button class="btn btn-secondary">休憩終了</button>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+  
+{% endblock %}
+
+{% block extra_script %}
+<script>
+  function updateClock() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    const timeStr = now.toLocaleTimeString('ja-JP', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+
+    document.getElementById('current-date').textContent = dateStr;
+    document.getElementById('current-time').textContent = timeStr;
+  }
+
+  setInterval(updateClock, 1000);
+  updateClock();
+</script>
+{% endblock %}
